@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(Manifold)
 
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -23,9 +24,13 @@ option(BUILD_PERFORMANCE_TEST "More subdivisition for performance test" OFF)
 option(BUILD_OPENMP "Enable support for OpenMP" OFF)
 option(BUILD_LOG "Enable verbose log" OFF)
 
+find_package(HDF5 REQUIRED)
 include_directories(src)
 include_directories(3rd_party/eigen/)
 include_directories(3rd_party/libigl/include)
+include_directories(3rd_party/HighFive/include)
+include_directories(${HDF5_INCLUDE_DIRS})
+
 
 if(BUILD_PERFORMANCE_TEST)
     add_definitions(-DPERFORMANCE_TEST)
@@ -56,6 +61,8 @@ set(
     src/Parser.h
     src/Parser.cc
     src/types.h
+        src/PXH5Dataset.cpp
+        src/PXH5Dataset.h
 )
 
 add_executable(
@@ -64,5 +71,5 @@ add_executable(
 )
 
 target_link_libraries(
-    manifold
+        manifold PUBLIC ${HDF5_LIBRARIES}
 )
