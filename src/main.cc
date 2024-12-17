@@ -31,6 +31,7 @@ void processFile(const fs::path &source, const fs::path &target, const int depth
 	const std::string is_manifold = polydata.isManifold() ? "Yes" : "No";
 	std::cout << "Is manifold: " << is_manifold << std::endl;
 
+	dataset.PXVTKToH5(target, polydata);
 	// dataset.VertsAndFacesToH5(target, out_verts, out_faces);
 }
 

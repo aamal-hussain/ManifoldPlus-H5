@@ -71,7 +71,12 @@ void PXH5Dataset::PXVTKToH5(
     const bool has_areas
     ) const {
     try {
-        File file(filepath, File::OpenOrCreate);
+        if (fs::exists(filepath)) {
+            std::cout << "Warning: Overwriting existing file: " << filepath << std::endl;
+            fs::remove(filepath);
+        }
+
+        File file(filepath, File::Create);
 
         Group root_group = file.getGroup("/");
         H5Easy::dump(file, "/" + dataset_parameters_.verts, polydata.GetVerts());
