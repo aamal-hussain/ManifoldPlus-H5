@@ -71,8 +71,8 @@ public:
         bool has_areas = true
         ) const ;
 
-    MatrixD GetInVerts() const { return verts_; }
-    MatrixI GetInFaces() const { return faces_; }
+    MatrixD GetVerts() const { return verts_; }
+    MatrixI GetFaces() const { return faces_; }
     long GetNumberOfVerts() const { return verts_.rows(); }
     long GetNumberOfFaces() const { return faces_.rows(); }
 

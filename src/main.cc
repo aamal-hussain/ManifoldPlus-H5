@@ -22,7 +22,7 @@ void processFile(const fs::path &source, const fs::path &target, const int depth
 	MatrixD out_verts;
 	MatrixI out_faces;
 
-	manifold.ProcessManifold(dataset.GetInVerts(), dataset.GetInFaces(), depth, &out_verts, &out_faces);
+	manifold.ProcessManifold(dataset.GetVerts(), dataset.GetFaces(), depth, &out_verts, &out_faces);
 
 	PXVTKDataset polydata(out_verts, out_faces);
 	polydata.ComputeNormals();

@@ -47,7 +47,12 @@ void PXH5Dataset::VertsAndFacesFromH5(const fs::path &filepath) {
 
 void PXH5Dataset::VertsAndFacesToH5(const fs::path &filepath, const MatrixD &out_verts, const MatrixI &out_faces) const {
     try {
-        File file(filepath, File::OpenOrCreate);
+        if (fs::exists(filepath)) {
+            std::cout << "Warning: Overwriting existing file: " << filepath << std::endl;
+            fs::remove(filepath);
+        }
+
+        File file(filepath, File::Create);
 
         Group root_group = file.getGroup("/");
         H5Easy::dump(file, "/" + dataset_parameters_.verts, out_verts);

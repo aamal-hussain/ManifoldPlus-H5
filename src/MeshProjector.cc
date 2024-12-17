@@ -158,15 +158,15 @@ void MeshProjector::SplitVertices() {
 }
 
 void MeshProjector::ComputeIndependentSet() {
-	static std::random_device dev;
-	static std::mt19937 rng(dev());
+	std::random_device dev;
+	std::mt19937 rng(dev());
 
 	int marked_vertices = 0;
 	int group_id = 0;
 	std::vector<int> vertex_colors(num_V_, -1);
 	while (marked_vertices < num_V_) {
 		for (int i = 0; i < vertex_colors.size(); ++i) {
-			vertex_groups_.push_back(std::vector<int>());
+			vertex_groups_.emplace_back();
 			auto& group = vertex_groups_.back();
 			if (vertex_colors[i] != -1)
 				continue;
@@ -188,8 +188,8 @@ void MeshProjector::ComputeIndependentSet() {
 				group.push_back(i);
 				marked_vertices += 1;
 			}
-			std::random_shuffle(group.begin(), group.end());
-			// std::shuffle(group.begin(), group.end(), rng);
+
+			std::shuffle(group.begin(), group.end(), rng);
 		}
 		group_id += 1;
 	}	
