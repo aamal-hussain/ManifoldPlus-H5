@@ -1,18 +1,21 @@
+#include <filesystem>
+
 #include <igl/readOBJ.h>
 #include <igl/writeOBJ.h>
 #include "Manifold.h"
 #include "Parser.h"
 #include "types.h"
-#include "PXH5Dataset.h"
 
-#include <filesystem>
+#include "PXH5Dataset.h"
+#include "PXVTKDataset.h"
 
 namespace fs = std::__fs::filesystem;
+
 
 void processFile(const fs::path &source, const fs::path &target, const int depth, PXH5Dataset &dataset)
 {
 
-	dataset.ReadH5(source);
+	dataset.VertsAndFacesFromH5(source);
 	Manifold manifold;
 	std::cout << "Number of verts: " << dataset.GetNumberOfVerts() << std::endl;
 	std::cout << "Number of faces: " << dataset.GetNumberOfFaces() << std::endl;
@@ -21,7 +24,11 @@ void processFile(const fs::path &source, const fs::path &target, const int depth
 
 	manifold.ProcessManifold(dataset.GetInVerts(), dataset.GetInFaces(), depth, &out_verts, &out_faces);
 
-	dataset.WriteH5(target, out_verts, out_faces);
+	PXVTKDataset polydata(out_verts, out_faces);
+	polydata.ComputeNormals();
+	polydata.ComputeCellAreas();
+
+	dataset.VertsAndFacesToH5(target, out_verts, out_faces);
 }
 
 int main(const int argc, char **argv)
@@ -51,8 +58,8 @@ int main(const int argc, char **argv)
 
 	const int depth = std::stoi(parser["depth"]);
 
-	fs::path source_filepath = parser["source"];
-	fs::path target_filepath = parser["target"];
+	const fs::path source_filepath = parser["source"];
+	const fs::path target_filepath = parser["target"];
 
 	std::cout << "Processing file " << source_filepath << std::endl;
 	try

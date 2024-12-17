@@ -25,10 +25,14 @@ option(BUILD_OPENMP "Enable support for OpenMP" OFF)
 option(BUILD_LOG "Enable verbose log" OFF)
 
 find_package(HDF5 REQUIRED)
+
 include_directories(src)
 include_directories(3rd_party/eigen/)
 include_directories(3rd_party/libigl/include)
 include_directories(3rd_party/HighFive/include)
+include_directories(3rd_party/vtk/Common/Core)
+include_directories(3rd_party/vtk/Common/DataModel)
+include_directories(3rd_party/vtk/Filters/Core)
 include_directories(${HDF5_INCLUDE_DIRS})
 
 
@@ -63,6 +67,8 @@ set(
     src/types.h
         src/PXH5Dataset.cpp
         src/PXH5Dataset.h
+        src/PXVTKDataset.cpp
+        src/PXVTKDataset.h
 )
 
 add_executable(

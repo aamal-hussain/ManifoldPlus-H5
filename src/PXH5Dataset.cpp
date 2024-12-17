@@ -27,7 +27,7 @@ void PXH5Dataset::PrintGroupStructure(const Group &group, const std::string &pre
     }
 }
 
-void PXH5Dataset::ReadH5(const fs::path &filepath) {
+void PXH5Dataset::VertsAndFacesFromH5(const fs::path &filepath) {
     try {
         if (!fs::exists(filepath))
             throw std::runtime_error("File not found: " + static_cast<std::string>(filepath));
@@ -45,7 +45,7 @@ void PXH5Dataset::ReadH5(const fs::path &filepath) {
     }
 }
 
-void PXH5Dataset::WriteH5(const fs::path &filepath, const MatrixD &out_verts, const MatrixI &out_faces) const {
+void PXH5Dataset::VertsAndFacesToH5(const fs::path &filepath, const MatrixD &out_verts, const MatrixI &out_faces) const {
     try {
         File file(filepath, File::OpenOrCreate);
 
@@ -55,6 +55,30 @@ void PXH5Dataset::WriteH5(const fs::path &filepath, const MatrixD &out_verts, co
 
     } catch (std::exception &err) {
         std::cerr << "Failed to write to HDF5 file " << filepath << ": " << err.what() << std::endl;
+    }
+}
+
+void PXH5Dataset::PXVTKToH5(
+    const fs::path &filepath,
+    const PXVTKDataset &polydata,
+    const bool has_point_normals,
+    const bool has_cell_normals,
+    const bool has_areas
+    ) const {
+    try {
+        File file(filepath, File::OpenOrCreate);
+
+        Group root_group = file.getGroup("/");
+        H5Easy::dump(file, "/" + dataset_parameters_.verts, polydata.GetVerts());
+        H5Easy::dump(file, "/" + dataset_parameters_.faces, polydata.GetFaces());
+        if (has_point_normals)
+            H5Easy::dump(file, "/" + dataset_parameters_.verts_normals, polydata.GetPointNormals());
+        if (has_cell_normals)
+            H5Easy::dump(file, "/" + dataset_parameters_.faces_normals, polydata.GetCellNormals());
+        if (has_areas)
+            H5Easy::dump(file, "/" + dataset_parameters_.areas, polydata.GetCellAreas());
+    } catch (std::exception &err) {
+        std::cout << "Failed to write to HDF5 file " << filepath << ": " << err.what() << std::endl;
     }
 }
 

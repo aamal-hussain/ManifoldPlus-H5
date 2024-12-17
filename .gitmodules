@@ -7,3 +7,6 @@
 [submodule "3rd_party/HighFive"]
 	path = 3rd_party/HighFive
 	url = https://github.com/BlueBrain/HighFive.git
+[submodule "3rd_party/vtk"]
+	path = 3rd_party/vtk
+	url = https://gitlab.kitware.com/vtk/vtk.git

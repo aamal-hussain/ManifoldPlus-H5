@@ -10,7 +10,7 @@
 #include <highfive/H5File.hpp>
 #include "types.h"
 #include <filesystem>
-
+#include "PXVTKDataset.h"
 
 using HighFive::File;
 using HighFive::Group;
@@ -61,8 +61,15 @@ public:
     template <typename  T>
     T LoadMatrixDataset(const File& file, const std::string& path);
 
-    void ReadH5(const fs::path &filepath);
-    void WriteH5(const fs::path &filepath, const MatrixD &out_verts, const MatrixI &out_faces) const ;
+    void VertsAndFacesFromH5(const fs::path &filepath);
+    void VertsAndFacesToH5(const fs::path &filepath, const MatrixD &out_verts, const MatrixI &out_faces) const ;
+    void PXVTKToH5(
+        const fs::path &filepath,
+        const PXVTKDataset &polydata,
+        bool has_point_normals = true,
+        bool has_cell_normals = true,
+        bool has_areas = true
+        ) const ;
 
     MatrixD GetInVerts() const { return verts_; }
     MatrixI GetInFaces() const { return faces_; }
