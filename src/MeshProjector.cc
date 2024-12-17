@@ -9,7 +9,6 @@
 
 #include <Eigen/Dense>
 
-#include <igl/per_vertex_normals.h>
 #include <igl/per_face_normals.h>
 #include <igl/point_mesh_squared_distance.h>
 

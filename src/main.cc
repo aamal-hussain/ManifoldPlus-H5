@@ -2,6 +2,8 @@
 
 #include <igl/readOBJ.h>
 #include <igl/writeOBJ.h>
+
+#include "IO.h"
 #include "Manifold.h"
 #include "Parser.h"
 #include "types.h"
@@ -16,20 +18,17 @@ void processFile(const fs::path &source, const fs::path &target, const int depth
 {
 
 	dataset.VertsAndFacesFromH5(source);
-	Manifold manifold;
 	std::cout << "Number of verts: " << dataset.GetNumberOfVerts() << std::endl;
 	std::cout << "Number of faces: " << dataset.GetNumberOfFaces() << std::endl;
 	MatrixD out_verts;
 	MatrixI out_faces;
 
-	manifold.ProcessManifold(dataset.GetVerts(), dataset.GetFaces(), depth, &out_verts, &out_faces);
+	Manifold manifoldH5;
+	manifoldH5.ProcessManifold(dataset.GetVerts(), dataset.GetFaces(), depth, &out_verts, &out_faces);
 
 	PXVTKDataset polydata(out_verts, out_faces);
 	polydata.ComputeNormals();
 	polydata.ComputeCellAreas();
-
-	const std::string is_manifold = polydata.isManifold() ? "Yes" : "No";
-	std::cout << "Is manifold: " << is_manifold << std::endl;
 
 	dataset.PXVTKToH5(target, polydata);
 }

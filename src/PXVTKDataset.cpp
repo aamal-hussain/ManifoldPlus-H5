@@ -10,7 +10,7 @@
 #include <vtkTriangle.h>
 #include <vector>
 
-PXVTKDataset::PXVTKDataset(const MatrixD &verts, const MatrixI &faces) {
+PXVTKDataset::PXVTKDataset(const MatrixD &verts, const MatrixI &faces) : verts_(verts), faces_(faces) {
     const vtkNew<vtkPoints> points;
     const vtkNew<vtkCellArray> cells;
 
@@ -40,6 +40,7 @@ void PXVTKDataset::ComputeNormals(const bool compute_cell_normals, const bool co
     const vtkNew<vtkPolyDataNormals> normal_generator;
 
     normal_generator->SetInputData(mesh_);
+    normal_generator->SplittingOff();
     if (compute_point_normals) {
         normal_generator->ComputePointNormalsOn();
     }
@@ -69,31 +70,32 @@ void PXVTKDataset::ComputeCellAreas() {
 
 MatrixD PXVTKDataset::GetVerts() const {
     const vtkIdType num_points = mesh_->GetNumberOfPoints();
-    Eigen::MatrixXd verts(num_points, 3);
-    for (vtkIdType i = 0 ; i < num_points; i++) {
+    MatrixD verts_matrix(num_points, 3);
+
+    for (vtkIdType i = 0; i < num_points; ++i) {
         double point[3];
         mesh_->GetPoint(i, point);
-        verts(i, 0) = point[0];
-        verts(i, 1) = point[1];
-        verts(i, 2) = point[2];
+        verts_matrix(i, 0) = point[0];
+        verts_matrix(i, 1) = point[1];
+        verts_matrix(i, 2) = point[2];
     }
 
-    return verts;
+    return verts_matrix;
 }
 
 
 MatrixI PXVTKDataset::GetFaces() const {
     const vtkIdType num_faces = mesh_->GetNumberOfCells();
-    Eigen::MatrixXi faces(num_faces, 3);
+    MatrixI faces_matrix(num_faces, 3);
+
     for (vtkIdType i = 0; i < num_faces; i++) {
-        vtkNew<vtkIdList> face;
-        mesh_->GetCellPoints(i, face);
-        for (int j = 0; j < 3; ++j) {
-            faces(i, j) = face->GetId(j);
+        vtkCell* cell = mesh_->GetCell(i);
+        for (int j = 0; j < 3; j++) {
+            faces_matrix(i, j) = static_cast<int>(cell->GetPointId(j));
         }
     }
 
-    return faces;
+    return faces_matrix;
 }
 
 MatrixD PXVTKDataset::GetCellNormals() const {
@@ -126,14 +128,31 @@ Eigen::VectorXd PXVTKDataset::GetCellAreas() const {
     return areas_;
 }
 
-bool PXVTKDataset::isManifold() const {
+ManifoldStatus PXVTKDataset::checkManifold() const {
+    ManifoldStatus status{};
+
     const vtkNew<vtkFeatureEdges> feature_edges;
     feature_edges->SetInputData(mesh_);
     feature_edges->BoundaryEdgesOn();
     feature_edges->NonManifoldEdgesOn();
+    feature_edges->ManifoldEdgesOff();
+    feature_edges->FeatureEdgesOff();
     feature_edges->Update();
 
-    const vtkSmartPointer boundary_edges = feature_edges->GetOutput()->GetLines();
+    auto* output = feature_edges->GetOutput();
+    status.num_boundary_edges = output->GetNumberOfLines();
+    status.num_non_manifold_edges = feature_edges->GetNonManifoldEdges();
 
-    return boundary_edges->GetNumberOfCells() == 0;
+    status.num_non_triangular_faces = 0;
+    for (vtkIdType i = 0; i < mesh_->GetNumberOfCells(); i++) {
+        if (mesh_->GetCell(i)->GetNumberOfPoints() != 3) {
+            status.num_non_triangular_faces++;
+        }
+    }
+
+    status.is_manifold = (status.num_boundary_edges == 0 &&
+                         status.num_non_manifold_edges == 0 &&
+                         status.num_non_triangular_faces == 0);
+
+    return status;
 }

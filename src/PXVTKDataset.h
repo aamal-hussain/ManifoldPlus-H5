@@ -9,6 +9,13 @@
 
 #include "types.h"
 
+struct ManifoldStatus {
+    bool is_manifold;
+    int num_boundary_edges;
+    int num_non_manifold_edges;
+    int num_non_triangular_faces;
+};
+
 
 class PXVTKDataset {
 public:
@@ -16,7 +23,7 @@ public:
     void ComputeNormals(bool compute_cell_normals = true, bool compute_point_normals = true) const;
     void ComputeCellAreas();
 
-    bool HasCellAreas() const { return has_cell_areas_; }
+    [[nodiscard]] bool HasCellAreas() const { return has_cell_areas_; }
 
     MatrixD GetVerts() const;
     MatrixI GetFaces() const;
@@ -24,11 +31,14 @@ public:
     MatrixD GetPointNormals() const;
     Eigen::VectorXd GetCellAreas() const;
 
-    bool isManifold() const;
+    ManifoldStatus checkManifold() const;
 
 private:
     vtkNew<vtkPolyData> mesh_;
     Eigen::VectorXd areas_;
+
+    MatrixD verts_;
+    MatrixI faces_;
 
     bool has_cell_areas_;
 };
