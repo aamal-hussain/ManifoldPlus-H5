@@ -28,14 +28,17 @@ void processFile(const fs::path &source, const fs::path &target, const int depth
 	polydata.ComputeNormals();
 	polydata.ComputeCellAreas();
 
-	dataset.VertsAndFacesToH5(target, out_verts, out_faces);
+	const std::string is_manifold = polydata.isManifold() ? "Yes" : "No";
+	std::cout << "Is manifold: " << is_manifold << std::endl;
+
+	// dataset.VertsAndFacesToH5(target, out_verts, out_faces);
 }
 
 int main(const int argc, char **argv)
 {
 	Parser parser;
-	parser.AddArgument("source", "../examples/input.h5");
-	parser.AddArgument("target", "../examples/output.h5");
+	parser.AddArgument("source", "../data/input.h5");
+	parser.AddArgument("target", "../data/output.h5");
 	parser.AddArgument("depth", "8");
 
 	parser.AddArgument("verts", "mesh.verts");
@@ -65,7 +68,7 @@ int main(const int argc, char **argv)
 	try
 	{
 		processFile(source_filepath, target_filepath, depth, dataset);
-		std::cout << "Processed: " << source_filepath << std::endl;
+		std::cout << "Saved to: " << target_filepath << std::endl;
 	}
 	catch (const std::exception &e)
 	{

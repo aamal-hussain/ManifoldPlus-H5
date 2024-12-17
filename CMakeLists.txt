@@ -25,15 +25,16 @@ option(BUILD_OPENMP "Enable support for OpenMP" OFF)
 option(BUILD_LOG "Enable verbose log" OFF)
 
 find_package(HDF5 REQUIRED)
-
+find_package(VTK REQUIRED)
 include_directories(src)
 include_directories(3rd_party/eigen/)
 include_directories(3rd_party/libigl/include)
 include_directories(3rd_party/HighFive/include)
-include_directories(3rd_party/vtk/Common/Core)
-include_directories(3rd_party/vtk/Common/DataModel)
-include_directories(3rd_party/vtk/Filters/Core)
+#include_directories(3rd_party/vtk/Common/Core)
+#include_directories(3rd_party/vtk/Common/DataModel)
+#include_directories(3rd_party/vtk/Filters/Core)
 include_directories(${HDF5_INCLUDE_DIRS})
+include_directories(${VTK_INCLUDE_DIRS})
 
 
 if(BUILD_PERFORMANCE_TEST)
@@ -77,5 +78,5 @@ add_executable(
 )
 
 target_link_libraries(
-        manifold PUBLIC ${HDF5_LIBRARIES}
+        manifold PUBLIC ${HDF5_LIBRARIES} ${VTK_LIBRARIES}
 )

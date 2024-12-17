@@ -4,9 +4,11 @@
 
 #include "PXVTKDataset.h"
 #include <vtkPolyDataNormals.h>
+#include <vtkFeatureEdges.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkTriangle.h>
+#include <vector>
 
 PXVTKDataset::PXVTKDataset(const MatrixD &verts, const MatrixI &faces) {
     const vtkNew<vtkPoints> points;
@@ -20,7 +22,11 @@ PXVTKDataset::PXVTKDataset(const MatrixD &verts, const MatrixI &faces) {
     }
 
     for (int i = 0; i < faces.rows(); i++) {
-        cells->InsertNextCell(3, faces.row(i).data());
+        std::vector<vtkIdType> cell_ids(faces.cols());
+        for (int j = 0; j < faces.cols(); j++) {
+            cell_ids[j] = static_cast<vtkIdType>(faces(i, j));
+        }
+        cells->InsertNextCell(faces.cols(), cell_ids.data());
     }
 
     mesh_->SetPoints(points);
@@ -30,7 +36,7 @@ PXVTKDataset::PXVTKDataset(const MatrixD &verts, const MatrixI &faces) {
     has_cell_areas_ = false;
 }
 
-void PXVTKDataset::ComputeNormals(bool compute_cell_normals, bool compute_point_normals) {
+void PXVTKDataset::ComputeNormals(const bool compute_cell_normals, const bool compute_point_normals) const {
     const vtkNew<vtkPolyDataNormals> normal_generator;
 
     normal_generator->SetInputData(mesh_);
@@ -64,7 +70,7 @@ void PXVTKDataset::ComputeCellAreas() {
 MatrixD PXVTKDataset::GetVerts() const {
     const vtkIdType num_points = mesh_->GetNumberOfPoints();
     Eigen::MatrixXd verts(num_points, 3);
-    for (vtkIdType i; i < num_points; i++) {
+    for (vtkIdType i = 0 ; i < num_points; i++) {
         double point[3];
         mesh_->GetPoint(i, point);
         verts(i, 0) = point[0];
@@ -91,43 +97,25 @@ MatrixI PXVTKDataset::GetFaces() const {
 }
 
 MatrixD PXVTKDataset::GetCellNormals() const {
-    const vtkDataArray* normals {mesh_->GetCellData()->GetNormals()};
+    vtkDataArray* normals = mesh_->GetCellData()->GetNormals();
     if (!normals)
         throw std::runtime_error("Cell normals not computed");
 
     const vtkIdType num_faces = mesh_->GetNumberOfCells();
-    Eigen::MatrixXd normal_matrix(num_faces, 3);
+    const auto normals_ptr = static_cast<const double*>(normals->GetVoidPointer(0));
 
-    for (vtkIdType i = 0; i < num_faces; i++) {
-        double normal[3];
-        normals->GetTuple(i, normal);
-
-        normal_matrix(i, 0) = normal[0];
-        normal_matrix(i, 1) = normal[1];
-        normal_matrix(i, 2) = normal[2];
-    }
-    return normal_matrix;
+    return Eigen::Map<const Eigen::MatrixXd>(normals_ptr, num_faces, 3);
 }
 
 MatrixD PXVTKDataset::GetPointNormals() const {
-    const vtkDataArray* normals {mesh_->GetPointData()->GetNormals()};
+    vtkDataArray* normals = mesh_->GetPointData()->GetNormals();
     if (!normals) {
         throw std::runtime_error("Point normals not computed");
     }
-
     const vtkIdType num_points = mesh_->GetNumberOfPoints();
-    Eigen::MatrixXd normal_matrix(num_points, 3);
+    const auto normals_ptr = static_cast<const double*>(normals->GetVoidPointer(0));
 
-    for (vtkIdType i = 0; i < num_points; i++) {
-        double normal[3];
-        normals->GetTuple(i, normal);
-
-        normal_matrix(i, 0) = normal[0];
-        normal_matrix(i, 1) = normal[1];
-        normal_matrix(i, 2) = normal[2];
-    }
-
-    return normal_matrix;
+    return Eigen::Map<const Eigen::MatrixXd>(normals_ptr, num_points, 3);
 }
 
 Eigen::VectorXd PXVTKDataset::GetCellAreas() const {
@@ -136,4 +124,16 @@ Eigen::VectorXd PXVTKDataset::GetCellAreas() const {
     }
 
     return areas_;
+}
+
+bool PXVTKDataset::isManifold() const {
+    const vtkNew<vtkFeatureEdges> feature_edges;
+    feature_edges->SetInputData(mesh_);
+    feature_edges->BoundaryEdgesOn();
+    feature_edges->NonManifoldEdgesOn();
+    feature_edges->Update();
+
+    const vtkSmartPointer boundary_edges = feature_edges->GetOutput()->GetLines();
+
+    return boundary_edges->GetNumberOfCells() == 0;
 }

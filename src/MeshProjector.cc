@@ -1,6 +1,6 @@
 #include "MeshProjector.h"
 
-#include <chrono>
+#include <random>
 #include <fstream>
 #include <map>
 #include <set>
@@ -158,6 +158,9 @@ void MeshProjector::SplitVertices() {
 }
 
 void MeshProjector::ComputeIndependentSet() {
+	static std::random_device dev;
+	static std::mt19937 rng(dev());
+
 	int marked_vertices = 0;
 	int group_id = 0;
 	std::vector<int> vertex_colors(num_V_, -1);
@@ -186,6 +189,7 @@ void MeshProjector::ComputeIndependentSet() {
 				marked_vertices += 1;
 			}
 			std::random_shuffle(group.begin(), group.end());
+			// std::shuffle(group.begin(), group.end(), rng);
 		}
 		group_id += 1;
 	}	

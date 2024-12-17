@@ -13,7 +13,7 @@
 class PXVTKDataset {
 public:
     PXVTKDataset(const MatrixD &verts, const MatrixI &faces);
-    void ComputeNormals(bool compute_cell_normals = true, bool compute_point_normals = true);
+    void ComputeNormals(bool compute_cell_normals = true, bool compute_point_normals = true) const;
     void ComputeCellAreas();
 
     bool HasCellAreas() const { return has_cell_areas_; }
@@ -23,6 +23,8 @@ public:
     MatrixD GetCellNormals() const;
     MatrixD GetPointNormals() const;
     Eigen::VectorXd GetCellAreas() const;
+
+    bool isManifold() const;
 
 private:
     vtkNew<vtkPolyData> mesh_;
