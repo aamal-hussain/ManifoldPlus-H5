@@ -11,8 +11,7 @@
 #include "PXH5Dataset.h"
 #include "PXVTKDataset.h"
 
-namespace fs = std::__fs::filesystem;
-
+namespace fs = std::filesystem;
 
 void processFile(const fs::path &source, const fs::path &target, const int depth, PXH5Dataset &dataset)
 {

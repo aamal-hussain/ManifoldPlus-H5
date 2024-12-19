@@ -30,9 +30,6 @@ include_directories(src)
 include_directories(3rd_party/eigen/)
 include_directories(3rd_party/libigl/include)
 include_directories(3rd_party/HighFive/include)
-#include_directories(3rd_party/vtk/Common/Core)
-#include_directories(3rd_party/vtk/Common/DataModel)
-#include_directories(3rd_party/vtk/Filters/Core)
 include_directories(${HDF5_INCLUDE_DIRS})
 include_directories(${VTK_INCLUDE_DIRS})
 
@@ -78,5 +75,5 @@ add_executable(
 )
 
 target_link_libraries(
-        manifold PUBLIC ${HDF5_LIBRARIES} ${VTK_LIBRARIES}
+        manifold PUBLIC stdc++fs ${HDF5_LIBRARIES} ${VTK_LIBRARIES}
 )

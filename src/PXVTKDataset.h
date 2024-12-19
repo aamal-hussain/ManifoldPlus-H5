@@ -9,15 +9,16 @@
 
 #include "types.h"
 
-struct ManifoldStatus {
-    bool is_manifold;
-    int num_boundary_edges;
-    int num_non_manifold_edges;
-    int num_non_triangular_faces;
+struct ManifoldStatus
+{
+    bool is_manifold{false};
+    vtkIdType num_boundary_edges{0};
+    vtkIdType num_non_manifold_edges{0};
+    vtkIdType num_non_triangular_faces{0};
 };
 
-
-class PXVTKDataset {
+class PXVTKDataset
+{
 public:
     PXVTKDataset(const MatrixD &verts, const MatrixI &faces);
     void ComputeNormals(bool compute_cell_normals = true, bool compute_point_normals = true) const;
@@ -34,7 +35,7 @@ public:
     ManifoldStatus checkManifold() const;
 
 private:
-    vtkNew<vtkPolyData> mesh_;
+    vtkSmartPointer<vtkPolyData> mesh_{vtkSmartPointer<vtkPolyData>::New()};
     Eigen::VectorXd areas_;
 
     MatrixD verts_;
@@ -43,4 +44,4 @@ private:
     bool has_cell_areas_;
 };
 
-#endif //PXVTKDATASET_H
+#endif // PXVTKDATASET_H

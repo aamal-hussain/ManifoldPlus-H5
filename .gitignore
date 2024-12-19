@@ -34,3 +34,6 @@
 
 examples/
 build/
+.vscode/
+
+*.log
